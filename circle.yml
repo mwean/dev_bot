@@ -1,0 +1,25 @@
+machine:
+  environment:
+    PATH: "$HOME/.asdf/bin:$HOME/.asdf/shims:$PATH"
+    MIX_ENV: test
+
+dependencies:
+  cache_directories:
+    - ~/.asdf
+    - deps
+    - _build
+  pre:
+    - if ! asdf | grep version; then git clone https://github.com/asdf-vm/asdf.git ~/.asdf; fi
+    - asdf plugin-add erlang https://github.com/asdf-vm/asdf-erlang.git || true
+    - asdf plugin-add elixir https://github.com/asdf-vm/asdf-elixir.git || true
+    - asdf install
+    - mix local.hex --force
+    - mix local.rebar --force
+  override:
+    - mix deps.get
+    - mix deps.compile
+
+test:
+  override:
+    - mkdir -p $CIRCLE_TEST_REPORTS/espec
+    - mix test --format=json --out=$CIRCLE_TEST_REPORTS/espec/results.json
