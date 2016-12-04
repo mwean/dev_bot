@@ -23,3 +23,10 @@ test:
   override:
     - mkdir -p $CIRCLE_TEST_REPORTS/espec
     - mix test --format=json --out=$CIRCLE_TEST_REPORTS/espec/results.json
+
+deployment:
+  production:
+    branch: master
+    commands:
+      - git push --force git@heroku.com:dev-bot-production.git $CIRCLE_SHA1:refs/heads/master
+      - heroku run mix ecto.migrate --app dev-bot-production
