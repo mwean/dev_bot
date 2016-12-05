@@ -12,4 +12,8 @@ defmodule FakeSlack.Sends do
   def messages do
     Agent.get(__MODULE__, &(&1.messages))
   end
+
+  def clear! do
+    Agent.update(__MODULE__, fn(_) -> %{messages: []} end)
+  end
 end

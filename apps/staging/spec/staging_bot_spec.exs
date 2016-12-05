@@ -29,6 +29,7 @@ defmodule Staging.BotSpec do
   end
 
   finally do
+    @slack_send.clear!
     :ok = Ecto.Adapters.SQL.Sandbox.checkin(Staging.Repo)
   end
 
