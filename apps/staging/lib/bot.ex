@@ -15,7 +15,7 @@ defmodule Staging.Bot do
   def handle_event(_, _, state), do: {:ok, state}
 
   defp for_me?(message_text, slack) do
-    Regex.match?(~r/(?:<@#{slack.me.id}>|#{slack.me.name})/, message_text)
+    Regex.match?(~r/^\s*(?:<@#{slack.me.id}>|#{slack.me.name})/, message_text)
   end
 
   defp handle_message(message, slack) do

@@ -8,12 +8,13 @@ defmodule Staging.BotSpec do
 
   @slack_client Application.get_env(:staging, :slack_client)
   @slack_send Application.get_env(:staging, :slack_send)
+  @bot_name "Tucker"
   @channel "C1234ABCD"
   @jim_smith_id "UXYZA1234"
   @message_user %{id: "UABCD1234", name: "sally", real_name: "Sally Jones"}
 
   @slack %{
-    me: %{id: "U1234ABCD", name: "staging"},
+    me: %{id: "U1234ABCD", name: @bot_name},
     users: %{
       @jim_smith_id => %{real_name: "Jim Smith"},
       @message_user.id => @message_user
@@ -34,7 +35,7 @@ defmodule Staging.BotSpec do
   describe "listing known servers" do
     context "there are no known servers" do
       it "says there are no known servers" do
-        Bot.handle_event(%{type: "message", text: "staging list", channel: @channel}, @slack, [])
+        Bot.handle_event(%{type: "message", text: "#{@bot_name} list", channel: @channel}, @slack, [])
 
         expect(@slack_send).to have_received([string_matching(~r/I don't know any servers/), @channel, @slack])
       end
@@ -51,7 +52,7 @@ defmodule Staging.BotSpec do
       end
 
       it "lists the servers" do
-        Bot.handle_event(%{type: "message", text: "staging list", channel: @channel}, @slack, [])
+        Bot.handle_event(%{type: "message", text: "#{@bot_name} list", channel: @channel}, @slack, [])
 
         reservation_end_str = Timex.format!(reservation_end, "%-m/%-d", :strftime)
         response = string_matching(~r/non-prod-staging.*Reserved by Jim Smith until #{reservation_end_str}\n. prod-staging \(w\/ Prod Data\)/iu)
@@ -64,7 +65,7 @@ defmodule Staging.BotSpec do
   describe "adding a server" do
     context "the server doesn't already exist" do
       it "adds the server" do
-        Bot.handle_event(%{type: "message", text: "staging add server-1", channel: @channel, user: @message_user.id}, @slack, [])
+        Bot.handle_event(%{type: "message", text: "#{@bot_name} add server-1", channel: @channel, user: @message_user.id}, @slack, [])
 
         response = string_matching(~r/added server "server-1"/i)
         expect(@slack_send).to have_received([response, @channel, @slack])
@@ -78,7 +79,7 @@ defmodule Staging.BotSpec do
       end
 
       it "does not add the server" do
-        Bot.handle_event(%{type: "message", text: "staging add server-2", channel: @channel, user: @message_user.id}, @slack, [])
+        Bot.handle_event(%{type: "message", text: "#{@bot_name} add server-2", channel: @channel, user: @message_user.id}, @slack, [])
 
         response = string_matching(~r/.*server already exists/i)
         expect(@slack_send).to have_received([response, @channel, @slack])
@@ -98,7 +99,7 @@ defmodule Staging.BotSpec do
       end
 
       it "creates a reservation" do
-        Bot.handle_event(%{type: "message", text: "staging reserve until #{reservation_end_str}", channel: @channel, user: @message_user.id}, @slack, [])
+        Bot.handle_event(%{type: "message", text: "#{@bot_name} reserve until #{reservation_end_str}", channel: @channel, user: @message_user.id}, @slack, [])
 
         response = string_matching(~r/.*you have server-1 reserved until #{reservation_end_str_short}/i)
         expect(@slack_send).to have_received([response, @channel, @slack])
@@ -114,7 +115,7 @@ defmodule Staging.BotSpec do
         end
 
         it "creates the requested reservation" do
-          Bot.handle_event(%{type: "message", text: "staging reserve server-2 until #{reservation_end_str}", channel: @channel, user: @message_user.id}, @slack, [])
+          Bot.handle_event(%{type: "message", text: "#{@bot_name} reserve server-2 until #{reservation_end_str}", channel: @channel, user: @message_user.id}, @slack, [])
 
           response = string_matching(~r/.*you have server-2 reserved until #{reservation_end_str_short}/i)
           expect(@slack_send).to have_received([response, @channel, @slack])
@@ -140,7 +141,7 @@ defmodule Staging.BotSpec do
       it "does not create a reservation" do
         reservation_end_str = Timex.format!(reservation_end, "%Y-%m-%d", :strftime)
 
-        Bot.handle_event(%{type: "message", text: "staging reserve until #{reservation_end_str}", channel: @channel, user: @message_user.id}, @slack, [])
+        Bot.handle_event(%{type: "message", text: "#{@bot_name} reserve until #{reservation_end_str}", channel: @channel, user: @message_user.id}, @slack, [])
 
         response = string_matching(~r/.*there are no servers available/i)
         expect(@slack_send).to have_received([response, @channel, @slack])
@@ -156,12 +157,20 @@ defmodule Staging.BotSpec do
     end
 
     it "updates the server" do
-      Bot.handle_event(%{type: "message", text: "staging set prod to true on server-1", channel: @channel, user: @message_user.id}, @slack, [])
+      Bot.handle_event(%{type: "message", text: "#{@bot_name} set prod to true on server-1", channel: @channel, user: @message_user.id}, @slack, [])
 
       response = string_matching(~r/server-1 now has prod true/i)
       expect(@slack_send).to have_received([response, @channel, @slack])
 
       expect(Staging.Repo.one!(Staging.Server).prod_data).to be_true
+    end
+  end
+
+  describe "responding to the bot's name" do
+    it "only responds if the name is at the beginning of the message" do
+      Bot.handle_event(%{type: "message", text: "Hi #{@bot_name} list", channel: @channel, user: @message_user.id}, @slack, [])
+
+      expect(@slack_send.messages).to be_empty
     end
   end
 end
