@@ -30,3 +30,8 @@ deployment:
     commands:
       - git push --force git@heroku.com:dev-bot-production.git $CIRCLE_SHA1:refs/heads/master
       - heroku run mix ecto.migrate --app dev-bot-production
+  staging:
+    branch: develop
+    commands:
+      - git push --force git@heroku.com:dev-bot-staging.git $CIRCLE_SHA1:refs/heads/master
+      - heroku run mix ecto.migrate --app dev-bot-staging
