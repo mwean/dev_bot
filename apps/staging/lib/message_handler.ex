@@ -1,6 +1,6 @@
 defmodule Staging.MessageHandler do
   @callback match?(String.t) :: boolean
-  @callback respond(Slack.State, Map.t) :: any
+  @callback respond(Slack.State, map) :: any
 
   defmacro __using__(_) do
     quote do
