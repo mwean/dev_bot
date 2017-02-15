@@ -1,5 +1,7 @@
 use Mix.Config
 
+config :slack, token: System.get_env("SLACK_TOKEN") || raise("Missing SLACK_TOKEN variable")
+
 config :staging, Staging.Repo,
   adapter: Ecto.Adapters.Postgres,
   url: System.get_env("DATABASE_URL"),
