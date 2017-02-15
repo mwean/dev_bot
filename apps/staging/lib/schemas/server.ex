@@ -51,10 +51,28 @@ defmodule Staging.Server do
     })
   end
 
+  def release(server, user_id) do
+    reservation = current_reservation(server)
+
+    if reservation && reservation.user_id == user_id do
+      Reservation.release!(reservation)
+      :ok
+    else
+      :not_reserved
+    end
+  end
+
   def available?(server) do
-    Reservation.active(from r in Reservation, where: r.server_id == ^server.id)
+    active_reservations_for_server(server)
     |> Repo.none?
   end
+
+  def current_reservation(server) do
+    active_reservations_for_server(server)
+    |> Repo.one
+  end
+
+  defp active_reservations_for_server(server), do: Reservation.active(from r in Reservation, where: r.server_id == ^server.id)
 
   def available_for_reservation do
     from s in __MODULE__,

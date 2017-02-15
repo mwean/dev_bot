@@ -36,7 +36,7 @@ defmodule Staging.BotSpec do
   describe "listing known servers" do
     context "there are no known servers" do
       it "says there are no known servers" do
-        Bot.handle_event(%{type: "message", text: "#{@bot_name} list", channel: @channel}, @slack, [])
+        Bot.handle_event(%{type: "message", text: "#{@bot_name} list", channel: @channel, user: @message_user.id}, @slack, [])
 
         expect(@slack_send).to have_received([string_matching(~r/I don't know any servers/), @channel, @slack])
       end
@@ -53,7 +53,7 @@ defmodule Staging.BotSpec do
       end
 
       it "lists the servers" do
-        Bot.handle_event(%{type: "message", text: "#{@bot_name} list", channel: @channel}, @slack, [])
+        Bot.handle_event(%{type: "message", text: "#{@bot_name} list", channel: @channel, user: @message_user.id}, @slack, [])
 
         reservation_end_str = Timex.format!(reservation_end, "%-m/%-d", :strftime)
         response = string_matching(~r/non-prod-staging.*Reserved by Jim Smith until #{reservation_end_str}\n. prod-staging \(w\/ Prod Data\)/iu)
@@ -149,6 +149,31 @@ defmodule Staging.BotSpec do
 
         expect(Staging.Repo.pluck(Staging.Reservation, :id)).to eq([shared.reservation.id])
       end
+    end
+  end
+
+  describe "releasing a reservation" do
+    let :reservation_end, do: Timex.shift(Staging.today, days: 3)
+    let :server, do: Factory.insert(:server, %{name: "server-1"})
+
+    before do
+      Factory.insert(:reservation, %{server: server, user_id: @message_user.id, end_date: Ecto.Date.cast!(reservation_end)})
+    end
+
+    it "makes the server available" do
+      expect(Staging.Server.available?(server)).to be_false
+
+      Bot.handle_event(
+        %{
+          type: "message",
+          text: "#{@bot_name} release server-1",
+          channel: @channel,
+          user: @message_user.id
+        },
+        @slack, []
+      )
+
+      expect(Staging.Server.available?(server)).to be_true
     end
   end
 
