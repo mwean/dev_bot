@@ -1,5 +1,3 @@
-require IEx
-
 defmodule HaveReceivedAssertion do
   use ESpec.Assertions.Interface
 

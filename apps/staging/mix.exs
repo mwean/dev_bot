@@ -14,6 +14,7 @@ defmodule Staging.Mixfile do
       start_permanent: Mix.env == :prod,
       preferred_cli_env: [espec: :test],
       elixirc_paths: elixirc_paths(Mix.env),
+      dialyzer: [ flags: ["-Wunmatched_returns", "-Werror_handling", "-Wrace_conditions", "-Wunderspecs"]],
       deps: deps
     ]
   end
@@ -30,12 +31,14 @@ defmodule Staging.Mixfile do
 
   defp deps do
     [
+      {:jsx, "~> 2.8"},
       {:slack, "~> 0.9.0"},
       {:ecto, "~> 2.0"},
       {:postgrex, "~> 0.11"},
-      {:ex_machina, "~> 1.0", only: :test},
       {:timex, "~> 3.0"},
-      {:espec, "~> 1.2", only: :test}
+      {:ex_machina, "~> 1.0", only: :test},
+      {:espec, "~> 1.2", only: :test},
+      {:dialyxir, "~> 0.4", only: :dev, runtime: false}
     ]
   end
 end
