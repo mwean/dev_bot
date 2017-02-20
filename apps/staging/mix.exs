@@ -37,8 +37,9 @@ defmodule Staging.Mixfile do
       {:postgrex, "~> 0.11"},
       {:timex, "~> 3.0"},
       {:ex_machina, "~> 1.0", only: :test},
-      {:espec, "~> 1.2", only: :test},
-      {:dialyxir, "~> 0.4", only: :dev, runtime: false}
+      {:espec, "~> 1.3", only: :test},
+      {:dialyxir, "~> 0.4", only: :dev, runtime: false},
+      {:espec_junit_formatter, only: :test, github: "mwean/espec_junit_formatter"}
     ]
   end
 end
