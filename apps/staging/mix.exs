@@ -32,14 +32,14 @@ defmodule Staging.Mixfile do
   defp deps do
     [
       {:jsx, "~> 2.8"},
-      {:slack, "~> 0.9.0"},
+      {:slack, "~> 0.11.0"},
       {:ecto, "~> 2.0"},
       {:postgrex, "~> 0.11"},
       {:timex, "~> 3.0"},
       {:ex_machina, "~> 1.0", only: :test},
       {:espec, "~> 1.3", only: :test},
       {:dialyxir, "~> 0.4", only: :dev, runtime: false},
-      {:espec_junit_formatter, only: :test, github: "mwean/espec_junit_formatter"}
+      {:espec_junit_formatter, only: :test}
     ]
   end
 end
