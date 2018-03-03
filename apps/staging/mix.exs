@@ -39,7 +39,7 @@ defmodule Staging.Mixfile do
       {:ex_machina, "~> 1.0", only: :test},
       {:espec, "~> 1.3", only: :test},
       {:dialyxir, "~> 0.4", only: :dev, runtime: false},
-      {:espec_junit_formatter, only: :test}
+      {:espec_junit_formatter, "~> 0.1", only: :test}
     ]
   end
 end
