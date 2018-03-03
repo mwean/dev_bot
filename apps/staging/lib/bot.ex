@@ -1,10 +1,10 @@
 require Logger
 
 defmodule Staging.Bot do
-  alias Staging.{AddServer, ListServers, ReserveServer, UpdateServer, ReleaseServer}
+  alias Staging.{AddServer, ListServers, ReserveServer, UpdateServer, ReleaseServer, ArchiveServer}
 
   @slack Application.get_env(:staging, :slack_send)
-  @handlers [AddServer, ListServers, ReserveServer, UpdateServer, ReleaseServer]
+  @handlers [AddServer, ListServers, ReserveServer, UpdateServer, ReleaseServer, ArchiveServer]
 
   def handle_event(message = %{type: "message", text: message_text, user: user_id}, slack, state) do
     Logger.info("Message received: \"#{message_text}\" from #{slack.users[user_id][:name]}(#{user_id})")
