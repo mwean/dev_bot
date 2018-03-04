@@ -61,6 +61,21 @@ defmodule Staging.BotSpec do
         expect(@slack_send).to have_received([response, @channel, @slack])
       end
     end
+
+    context "some servers are archived" do
+      before do
+        Factory.insert(:server, %{name: "server-1", archived: false})
+        Factory.insert(:server, %{name: "server-2", archived: true})
+      end
+
+      it "lists the non-archived servers" do
+        Bot.handle_event(%{type: "message", text: "#{@bot_name} list", channel: @channel, user: @message_user.id}, @slack, [])
+
+        [{reply, _, _}] = @slack_send.messages
+        expect(reply).to have("server-1")
+        expect(reply).not_to have("server-2")
+      end
+    end
   end
 
   describe "adding a server" do
@@ -85,6 +100,36 @@ defmodule Staging.BotSpec do
         response = string_matching(~r/.*server already exists/i)
         expect(@slack_send).to have_received([response, @channel, @slack])
         expect(Staging.Repo.aggregate(Staging.Server, :count, :id)).to eq(1)
+      end
+    end
+  end
+
+  describe "archiving a server" do
+    let! :server, do: Factory.insert(:server, %{name: "server-1"})
+
+    it "archives the server" do
+      Bot.handle_event(%{type: "message", text: "#{@bot_name} archive server-1", channel: @channel, user: @message_user.id}, @slack, [])
+
+      response = string_matching(~r/archived server-1/i)
+      expect(@slack_send).to have_received([response, @channel, @slack])
+      expect(Staging.Server.reload(server).archived).to be_true()
+    end
+  end
+
+  describe "archiving multiple servers" do
+    before do
+      Factory.insert(:server, %{name: "server-1"})
+      Factory.insert(:server, %{name: "server-2"})
+    end
+
+    it "archives the servers" do
+      Bot.handle_event(%{type: "message", text: "#{@bot_name} archive server-1 server-2", channel: @channel, user: @message_user.id}, @slack, [])
+
+      response = string_matching(~r/archived server-1, server-2/i)
+      expect(@slack_send).to have_received([response, @channel, @slack])
+
+      Enum.each Staging.Repo.all(Staging.Server), fn(server) ->
+        expect(server.archived).to be_true()
       end
     end
   end

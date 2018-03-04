@@ -2,6 +2,13 @@ defmodule Staging.Repo do
   import Ecto.Query, only: [from: 2]
   use Ecto.Repo, otp_app: :staging
 
+  def init(_type, config) do
+    case System.get_env("DATABASE_USERNAME") do
+      nil -> {:ok, config}
+      username -> {:ok, Keyword.put(config, :username, username)}
+    end
+  end
+
   def any?(model) do
     aggregate(model, :count, :id) > 0
   end

@@ -9,13 +9,13 @@ defmodule Staging.Mixfile do
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.3",
+      elixir: "~> 1.4",
       build_embedded: Mix.env == :prod,
       start_permanent: Mix.env == :prod,
       preferred_cli_env: [espec: :test],
       elixirc_paths: elixirc_paths(Mix.env),
       dialyzer: [ flags: ["-Wunmatched_returns", "-Werror_handling", "-Wrace_conditions", "-Wunderspecs"]],
-      deps: deps
+      deps: deps()
     ]
   end
 
@@ -32,13 +32,14 @@ defmodule Staging.Mixfile do
   defp deps do
     [
       {:jsx, "~> 2.8"},
-      {:slack, "~> 0.9.0"},
+      {:slack, "~> 0.11.0"},
       {:ecto, "~> 2.0"},
       {:postgrex, "~> 0.11"},
       {:timex, "~> 3.0"},
       {:ex_machina, "~> 1.0", only: :test},
-      {:espec, "~> 1.2", only: :test},
-      {:dialyxir, "~> 0.4", only: :dev, runtime: false}
+      {:espec, "~> 1.3", only: :test},
+      {:dialyxir, "~> 0.4", only: :dev, runtime: false},
+      {:espec_junit_formatter, "~> 0.1", only: :test}
     ]
   end
 end

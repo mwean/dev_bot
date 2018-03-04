@@ -6,13 +6,27 @@ defmodule Staging.Server do
   schema "servers" do
     field :name
     field :prod_data, :boolean, default: false
+    field :archived, :boolean, default: false
+
     has_many :reservations, Reservation
     has_one :active_reservation, Reservation
   end
 
-  def with_active_reservation do
+  def with_name(names) do
+    from s in __MODULE__, where: s.name in ^names
+  end
+
+  def where(args) do
+    Repo.all(from __MODULE__, where: ^args)
+  end
+
+  def unarchived(query \\ __MODULE__) do
+    from s in query, where: s.archived == false
+  end
+
+  def with_active_reservation(query \\ __MODULE__) do
     active_reservations = Reservation.active
-    from s in __MODULE__,
+    from s in query,
     preload: [active_reservation: ^active_reservations]
   end
 
@@ -20,8 +34,12 @@ defmodule Staging.Server do
     from s in query, order_by: s.name
   end
 
+  def archive_all(query) do
+    Repo.update_all(query, [set: [archived: true]], returning: true)
+  end
+
   def reserve(user_id: user_id, end_date: end_date) do
-    non_prod_reservation = from s in available_for_reservation, where: s.prod_data == false, limit: 1
+    non_prod_reservation = from s in available_for_reservation(), where: s.prod_data == false, limit: 1
 
     case Repo.one(non_prod_reservation) do
       nil ->
@@ -80,5 +98,9 @@ defmodule Staging.Server do
     on: r.server_id == s.id
     and fragment("daterange(?, ?, '[]') @> ?", r.start_date, r.end_date, type(^Staging.today, Ecto.Date)),
     where: is_nil(r.id)
+  end
+
+  def reload(server) do
+    Repo.get(__MODULE__, server.id)
   end
 end

@@ -10,7 +10,7 @@ defmodule Staging.ListServers do
   end
 
   defp build_response(slack) do
-    case Repo.all(Server.with_active_reservation |> Server.order_by_name) do
+    case active_servers() do
       [] -> "I don't know any servers. Add some with \"staging add <server>\""
       servers ->
         ["Here are the servers I know about:" | display_server_list(servers, slack)]
@@ -24,6 +24,13 @@ defmodule Staging.ListServers do
       |> display_prod_data(server)
       |> display_reservation(server, slack)
     end
+  end
+
+  defp active_servers do
+    Server.with_active_reservation
+    |> Server.unarchived
+    |> Server.order_by_name
+    |> Repo.all
   end
 
   defp display_prod_data(str, %Server{prod_data: prod_data}) when prod_data == true, do: str <> " (w/ Prod Data)"
