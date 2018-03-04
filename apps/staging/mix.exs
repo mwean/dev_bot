@@ -32,7 +32,7 @@ defmodule Staging.Mixfile do
   defp deps do
     [
       {:jsx, "~> 2.8"},
-      {:slack, "~> 0.11.0"},
+      {:slack, "~> 0.11"},
       {:ecto, "~> 2.0"},
       {:postgrex, "~> 0.11"},
       {:timex, "~> 3.0"},
